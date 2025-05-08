@@ -14,7 +14,7 @@
 .type nameStr,%gnu_unique_object
     
 /*** STUDENTS: Change the next line to your name!  **/
-nameStr: .asciz "Inigo Montoya"  
+nameStr: .asciz "Joshua Lopez"  
  
 .align    /* ensure following vars are allocated on word-aligned addresses */
 
@@ -72,7 +72,34 @@ asmFunc:
      * Use it to test the C test code */
     
     /*** STUDENTS: Place your code BELOW this line!!! **************/
+    
+/*Assigns registers 3 and 4 to a_value and b_value memory location respectively*/
+ldr r3, =a_value /*Start memory address. In this case a_value memory address*/
+ldr r4, =b_value /*End memory address. Use b_value mem address to end loop later*/
+    
+loop:
+    lsr r1, r0, 31 /*Isolates the MSB of the 16 bit value in B16-B31*/
+    cmp r1, 1	   /*Checks to see if the MSB is 1(negative)*/
+    beq negative   /*If MSB is 1, then it branches to negative*/
 
+    /*If execution is in here, then B16-B31 is a positive value*/
+    lsr r1, r0, 16 /*Shifts the 16 bits we care about (B16-B31) into B0-B15 while also shifting out its previous bits,
+		    *and storing the new value into r1. B16-B31 will have 0 bits.*/
+    b assignment_handler /*Once we have our manipulated value, we branch to handle its assignment*/
+
+negative:
+    /*If in here, then B16-B31 in r0 is a negative value*/
+    asr r1, r0, 16 /*In r0, shifts the bits inside B0-B15 out so only the bits in B16-B31 remain in locations B0-B15, 
+		    *but it adds 1 to B16-B31 making it a negative value through extended sign and storing it in r1*/
+
+assignment_handler:
+    str r1, [r3]   /*Stores the manipulated, unpacked 16 bit value in r1 into its respective memory location*/
+    cmp r3, r4	   /*Check if r3 has reached b_value memory address*/
+    beq done       /*If the above cmp is equal, we're done*/
+    add r3, r3, 4  /*If here, we're not done, and we add 4 to the mem location of a_value so we get b_value's address*/
+    ror r0, r0, 16 /*Rotates the packed value to work with the other 16 bits(Rb) as with Ra for the next iteration*/
+    b loop	   /*Continue the loop for Rb*/
+    
     
     /*** STUDENTS: Place your code ABOVE this line!!! **************/
 
